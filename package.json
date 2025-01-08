@@ -1,0 +1,24 @@
+{
+  "name": "qt",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.5",
+    "less": "^4.2.0",
+    "less-loader": "^12.2.0",
+    "typescript": "~5.6.2",
+    "vite": "^5.4.10"
+  },
+  "dependencies": {
+    "chinese-lunar": "^0.1.4",
+    "element-plus": "^2.8.7",
+    "vue": "^3.5.12",
+    "vuex": "^4.0.2"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    /* Bundler mode */
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "resolveJsonModule": true, // 将JSON视作模块
+    "esModuleInterop": true,
+    "paths": { // 定义 路径映射
+      "vuex": [ // TS中引入vuex必须要进行这个配置 这是配置vuex的类型声明文件位置 声明vuex支持TS语法格式
+        "./node_modules/vuex/types"
+      ],
+      "@/*": [ // 表示 @/xx 导入时 会解析为 src/xx
+        "src/*"
+      ]
+    },
+    // 设置相对模块导入的基准目录 . 表示 项目根目录
+    "baseUrl": ".",
+  },
+  "include": [
+    "src",
+    "src/**/*.ts",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
