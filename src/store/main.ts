@@ -1,5 +1,6 @@
 import { createStore } from "vuex"
 import { http请求 } from "@/api/请求"
+import { 获取地址栏参数 } from "@/api/获取地址栏参数"
 
 interface State {
   [key: string]: any, // 允许其他任意属性的写法
@@ -31,7 +32,7 @@ export default createStore({
       通信数据: null,
       组件树: [],
       加载: false,
-      工程ID: '',
+      工程id: '',
       依赖数据: [], // 联动的组件数据存放在这
       用户名: '',
       密码: '',
@@ -87,12 +88,20 @@ export default createStore({
                 //#endregion
                 if (t[0] == 功能.切换轮播图) {
                   // 使用场景 多对一 因此根据目标组件去重
-                  需要收集的组件.find((e: any) => e.目标页面 == t[1] && e.目标组件 == t[2]) == undefined && 需要收集的组件.push({
-                    条件类型: '页面和组件-轮播',
-                    目标组件类型: 26,
-                    目标页面: t[1],
-                    目标组件: t[2],
-                  })
+                  // 可能绑定同一页面下多个组件
+                  // t[0] 是类型 t[t.length - 1] 是控制标识 将首位去除 中间部分是页面和组件列表
+                  t.shift()
+                  t.pop()
+                  let 目标组件list = t
+                  for (let 组件及页面 of 目标组件list) {
+                    let [页面名, 组件名] = 组件及页面.split(',')
+                    需要收集的组件.find((e: any) => e.目标页面 == 页面名 && e.目标组件 == 组件名) == undefined && 需要收集的组件.push({
+                      条件类型: '页面和组件-轮播',
+                      目标组件类型: 26,
+                      目标页面: 页面名,
+                      目标组件: 组件名,
+                    })
+                  }
                 }
               }
               break;
@@ -146,9 +155,9 @@ export default createStore({
                       // 滑块根据组件和页面 定义依赖 修改依赖值
                       组件名: 组件.name,
                       页面名: 页面.pagename,
-                      最小值: 组件.SliderMin,
-                      最大值: 组件.SliderMax,
-                      值: 组件.SliderMin,
+                      最小值: Number(组件.SliderMin),
+                      最大值: Number(组件.SliderMax),
+                      值: Number(组件.SliderMin),
                       // 窗帘根据目标组件和页面 匹配自身 读取依赖值
                       目标页面: 目标.目标页面,
                       目标组件: 目标.目标组件,
@@ -201,12 +210,22 @@ export default createStore({
   },
   actions: {
     async 获取界面(context: any) {
-      // 优先读取本地文件
       context.commit('set_state', { name: '加载', value: true });
+      let querys = 获取地址栏参数()
+      for (let { key, value } of querys) {
+        switch (key) {
+          case 'token':
+            context.commit('set_state', { name: 'token', value });
+            break;
+          case 'deviceId':
+            context.commit('set_state', { name: '设备id', value });
+            break;
+        }
+      }
       let 页面数据 = await http请求('./config/config.json')
       !页面数据 && (页面数据 = { projectid: '', data: [] })
       console.log('获取界面', 页面数据)
-      context.commit('set_state', { name: '工程ID', value: 页面数据.projectid })
+      context.commit('set_state', { name: '工程id', value: 页面数据.projectid })
       // 如果有登录控件 则删除首页 并设置当前页为登录跳转页
       // 如果没有登录控件 则不执行操作
       let 首页 = 0

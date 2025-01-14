@@ -16,4 +16,6 @@ export default defineConfig({
 		// 默认只会监听 localhost
 		host: '0.0.0.0',
 	},
+	// 打包后运行在平台服务器上 因此路径要用相对路径
+	base: './',
 });

@@ -1,7 +1,7 @@
 <template>
 	<!-- 因为图片要变换宽高以加以旋转贴合父容器 因此在父容器中要居中 再以中心点旋转 -->
 	<div class="img">
-		<img :style="图片样式()" :src="`/config/photos/${data.PictureNme}`" />
+		<img :style="图片样式()" :src="`./config/photos/${data.PictureNme}`" />
 	</div>
 </template>
 

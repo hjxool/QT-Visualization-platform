@@ -34,8 +34,8 @@ export const http请求: http请求参数 = function (param1: string, param2?: o
   } else {
     options['method'] = 'get'
     if (param2 && typeof param2 === 'object') {
-      param1 += '?'
       let queue = Object.entries(param2)
+      queue.length && (param1 += '?')
       while (queue.length) {
         if (queue.length > 1) {
           let [key, value] = queue.shift() as string[]

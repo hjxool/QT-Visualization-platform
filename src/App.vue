@@ -9,7 +9,7 @@ import { computed, onMounted } from 'vue';
 import main_page from './components/主页.vue';
 import { useStore } from 'vuex';
 import { 连接websocket } from './api/连接websocket';
-import { 获取页面数据 } from './api/获取页面数据';
+// import { 获取页面数据 } from './api/获取页面数据';
 import { 设备开始上报 } from './api/设备开始上报';
 import { 生成uuid } from './api/uuid';
 
@@ -21,7 +21,7 @@ store.dispatch('获取界面');
 
 // 在页面组件加载完后再获取初始化状态和建立websocket连接
 onMounted(() => {
-	获取页面数据();
+	// 获取页面数据();
 	设备开始上报();
 	连接websocket();
 });

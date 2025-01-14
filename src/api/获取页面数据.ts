@@ -10,11 +10,21 @@ export async function 获取页面数据() {
   if (res.head.code != 200) {
     return
   }
-  let { data } = JSON.parse(res.data.properties['QTInitStatus'].propertyValue);
-  console.log('初始化数据', data)
-  // 初始化没有uuid
-  store.commit('set_state', {
-    name: '通信数据',
-    value: { 类型: '初始化', data },
-  });
+  // // 获取ip 进行保存
+  // let ip = res.data.properties['ip'].propertyValue
+  // if (ip) {
+  //   store.commit('set_state', {
+  //     name: 'uuid',
+  //     value: ip,
+  //   });
+  // }
+  if (res.data.properties['QTInitStatus'].propertyValue) {
+    let { data } = JSON.parse(res.data.properties['QTInitStatus'].propertyValue);
+    console.log('初始化数据', data)
+    // 初始化没有uuid
+    store.commit('set_state', {
+      name: '通信数据',
+      value: { 类型: '初始化', data },
+    });
+  }
 }

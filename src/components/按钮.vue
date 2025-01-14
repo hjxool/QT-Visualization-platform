@@ -71,6 +71,9 @@ const 功能类型 = data.Data.split(';')[0];
 // 文字类型去空格 分割成数组
 data.FontStyle = data.FontStyle.replace(/\s+/g, '').split('+');
 
+const 绑定组件列表 = ref<any[]>([]);
+初始化();
+
 // 方法
 function 按下() {
 	// 区分是否自锁 自锁非激活只下发按下 抬起不下发 激活只在抬起时下发
@@ -176,40 +179,45 @@ function 查询跳转页类型(): string {
 	return '不跳转';
 }
 function 按钮指令(arg: number) {
-	let body: 指令参数 = {
-		组件名: data.name,
-		页面名,
-		data: {},
-		type: 'btn',
-		ispress: arg,
-	};
-	if (data.Data.length) {
-		let t = data.Data.split(';');
-		switch (t[0]) {
+	// 可能有多个指令下发
+	let 指令list: 指令参数[] = [];
+	if (绑定组件列表.value.length) {
+		switch (绑定组件列表.value[0].功能类型) {
 			case 功能.切换轮播图:
-				body.type = 'mutiimage';
-				for (let val of store.state.依赖数据) {
-					if (val.组件名 == t[2] && val.页面名 == t[1]) {
-						// 当前按钮控的是 对应组件依赖
-						// 根据加/减 操作依赖值
-						if (t[3] == 1) {
-							val.当前显示 < val.total - 1 && val.当前显示++;
-						} else if (t[3] == 2) {
-							val.当前显示 > 0 && val.当前显示--;
-						} else if (t[3] == 0) {
-							val.当前显示 = 0;
-						}
-						body.组件名 = t[2];
-						body.页面名 = t[1];
-						body.data.value = `${val.当前显示}`;
-						break;
+				for (let val of 绑定组件列表.value) {
+					if (val.控制标识 == 1) {
+						val.依赖组件.当前显示 < val.依赖组件.total - 1 ? val.依赖组件.当前显示++ : (val.依赖组件.当前显示 = 0);
+					} else if (val.控制标识 == 2) {
+						val.依赖组件.当前显示 > 0 ? val.依赖组件.当前显示-- : (val.依赖组件.当前显示 = val.依赖组件.total - 1);
+					} else if (val.控制标识 == 0) {
+						val.依赖组件.当前显示 = 0;
 					}
+					指令list.push({
+						组件名: val.依赖组件.组件名,
+						页面名: val.依赖组件.页面名,
+						data: {
+							value: `${val.依赖组件.当前显示}`,
+						},
+						type: val.type,
+						ispress: arg,
+					});
 				}
 				break;
 		}
+	} else {
+		// 没有修改body 则按默认值下发
+		指令list.push({
+			组件名: data.name,
+			页面名,
+			data: {},
+			type: 'btn',
+			ispress: arg,
+		});
 	}
 	setTimeout(() => {
-		发送指令(body);
+		for (let val of 指令list) {
+			发送指令(val);
+		}
 	}, data.LateTime * 1000);
 }
 function 按钮样式() {
@@ -232,14 +240,14 @@ function 按钮背景() {
 			if (激活.value) {
 				// 激活
 				if (data.ActivePictureName && data.ActivePictureName !== 'NONE') {
-					style['backgroundImage'] = `url(/config/photos/${data.ActivePictureName})`;
+					style['backgroundImage'] = `url(./config/photos/${data.ActivePictureName})`;
 				} else {
 					style['background'] = data.ActiveGroundcolor;
 				}
 			} else {
 				// 非激活
 				if (data.PictureNme && data.PictureNme !== 'NONE') {
-					style['backgroundImage'] = `url(/config/photos/${data.PictureNme})`;
+					style['backgroundImage'] = `url(./config/photos/${data.PictureNme})`;
 				} else {
 					style['background'] = data.GroundColor;
 				}
@@ -300,6 +308,36 @@ function 文字内容() {
 		return data.ActiveRectText || data.RectText;
 	} else {
 		return data.RectText;
+	}
+}
+function 初始化() {
+	if (data.Data.length) {
+		let t = data.Data.split(';');
+		switch (t[0]) {
+			case 功能.切换轮播图:
+				// 去掉头尾 中间部分是组件列表
+				t.shift();
+				let 控制标识 = t.pop();
+				let 组件名list = t;
+				for (let val of store.state.依赖数据) {
+					// 一个按钮可能控制多个轮播
+					for (let 组件及页面 of 组件名list) {
+						let [页面名, 组件名] = 组件及页面.split(',');
+						if (val.页面名 == 页面名 && val.组件名 == 组件名) {
+							// 当前按钮控的是 对应组件依赖
+							// 根据加/减 操作依赖值
+							绑定组件列表.value.push({
+								依赖组件: val, // 保留父级地址
+								type: 'mutiimage',
+								控制标识,
+								功能类型: 功能.切换轮播图,
+							});
+							break;
+						}
+					}
+				}
+				break;
+		}
 	}
 }
 </script>

@@ -114,7 +114,7 @@ function 组件功能() {
 		// 			break;
 		// 		case '天气':
 		// 			data.RectText = '';
-		// 			背景图.value = `/img/weather/${res.weather}.png`;
+		// 			背景图.value = `./img/weather/${res.weather}.png`;
 		// 			break;
 		// 	}
 		// });

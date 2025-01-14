@@ -73,7 +73,7 @@ function 初始化(): (img | text)[] {
 	if (data.loopmode == '图片循环') {
 		return data.MutiPicturenames.map((e: any) => ({
 			id: e.id,
-			url: `/config/photos/${e.picturename}`,
+			url: `./config/photos/${e.picturename}`,
 		}));
 	} else {
 		return data.MutiFontname.map((e: any) => ({

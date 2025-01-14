@@ -2,14 +2,14 @@
 	<div :class="[data.ScrollDirect == '横' ? 'row_layout' : 'col_layout']">
 		<!-- 背景 -->
 		<div class="bg_img">
-			<img v-if="data.PictureNme != 'NONE'" class="背景" :src="`/config/photos/${data.PictureNme}`" />
+			<img v-if="data.PictureNme != 'NONE'" class="背景" :src="`./config/photos/${data.PictureNme}`" />
 			<div v-else class="背景" :style="{ background: data.GroundColor }"></div>
 		</div>
 
 		<el-input v-if="data.ValueShow && data.ScrollDirect != '横'" v-model="输入值" @change="校验输入($event)" style="width: 80%; margin-top: 6px" v-input-size />
 
 		<div :class="[data.ScrollDirect == '横' ? 'row_layout' : '', 'flex_grow']">
-			<el-slider v-model="target.值" :min="最小值" :max="最大值" :step="步长" :marks="生成刻度值()" v-bind="动态属性" @input="下发指令()" v-cus-style />
+			<el-slider v-model="target.值" :min="最小值" :max="最大值" :step="步长" :marks="生成刻度值()" v-bind="动态属性" @input="控制下发频率()" v-cus-style />
 		</div>
 
 		<el-input v-if="data.ValueShow && data.ScrollDirect == '横'" v-model="输入值" @change="校验输入($event)" style="width: 10%" />
@@ -21,6 +21,7 @@ import { ref, defineProps, computed, watch, reactive } from 'vue';
 import { useStore } from 'vuex';
 import { 发送指令, type 指令参数 } from '@/api/发送指令';
 import { 功能 } from '@/store/main';
+import { 节流 } from '@/api/通用方法';
 
 interface Marks {
 	[key: number]: string;
@@ -70,6 +71,14 @@ const vInputSize = {
 		});
 	},
 };
+if (data.ValueShow) {
+	watch(
+		() => target.值,
+		(now: number) => {
+			输入值.value = now;
+		}
+	);
+}
 
 const 动态属性 = computed(() => {
 	if (data.ScrollDirect !== '横') {
@@ -148,7 +157,6 @@ function 生成刻度值(): Marks {
 	return m;
 }
 function 下发指令() {
-	输入值.value = target.值;
 	let body: 指令参数 = {
 		组件名: data.name,
 		页面名,
@@ -172,6 +180,7 @@ function 下发指令() {
 	}
 	发送指令(body);
 }
+const 控制下发频率 = 节流(下发指令, 100);
 function 计算步长(): number {
 	// data.LevelCount 表示全程滑动次数
 	return Math.round(((最大值.value - 最小值.value) / data.LevelCount) * 10) / 10;

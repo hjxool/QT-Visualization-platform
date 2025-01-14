@@ -25,22 +25,37 @@ export async function 连接websocket() {
       `/exchange/device-report/device-report.${store.state.设备id}`,
       (res2: any) => {
         let t = JSON.parse(res2.body);
-        let { data } = JSON.parse(t.contents[0].attributes['QTSYNData']);
-        console.log('通信', data);
-        if (data.projectid === store.state.工程ID) {
-          // 工程id对应才解析
-          switch (data.type) {
-            case 'btn':
-              break;
-            default:
-              // senderip是本机uuid 不解析数据 说明是本机发下去的数据
-              if (store.state.uuid == data.senderip) return;
-              break;
-          }
+        // 初始状态存在QTInitStatus中
+        if (t.contents[0].attributes?.QTInitStatus) {
+          let { data } = JSON.parse(t.contents[0].attributes['QTInitStatus'])
+          console.log('初始化数据', data)
           store.commit('set_state', {
             name: '通信数据',
-            value: { 类型: '更新', data },
+            value: { 类型: '初始化', data },
           });
+        }
+        if (t.contents[0].attributes?.QTSYNData) {
+          // 不一定有 QTSYNData 属性
+          let { data } = JSON.parse(t.contents[0].attributes['QTSYNData'])
+          console.log('通信', data);
+          // 有的是应答包 过滤掉 只有包含values字段才接收
+          if (data['values']) {
+            if (data.projectid === store.state.工程id) {
+              // 工程id对应才解析
+              switch (data.type) {
+                case 'btn':
+                  break;
+                default:
+                  // senderip是本机uuid 不解析数据 说明是本机发下去的数据
+                  if (store.state.uuid == data.senderip) return;
+                  break;
+              }
+              store.commit('set_state', {
+                name: '通信数据',
+                value: { 类型: '更新', data },
+              });
+            }
+          }
         }
       },
       { 'auto-delete': true }
@@ -73,4 +88,12 @@ export async function 连接websocket() {
   }, () => {
 
   }, '/');
+  // websocket连接成功后 发送指令 中控接收到后在websocket返回值
+  http请求(`${http地址}/api-device/device/panel/operation/8`, 'put', {
+    contentType: 0,
+    deviceId: store.state.设备id,
+    attributeMap: {
+      QTInitStatus: ''
+    }
+  }, { Authorization: `Bearer ${store.state.token}` })
 }
