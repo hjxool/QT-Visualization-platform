@@ -28,7 +28,9 @@ export function 发送指令(args: 指令参数) {
     ispress: args.ispress,
     type: args.type,
     matrixvalues: [],
+    sliderid: ''
   };
+  // args.data中可能有与order相同的字段 会进行覆盖
   let body = {
     data: { ...order, ...args.data },
   };

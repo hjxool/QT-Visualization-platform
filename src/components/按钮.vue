@@ -33,8 +33,10 @@ if (data.BtnEffect === '互锁') {
 						}
 						break;
 					case '不跳转':
+						// 不跳转的取消激活时 要下发取消指令 激活指令已经在点下时下发了
 						if (now.触发者 !== data.name && 激活.value) {
 							激活.value = false;
+							按钮指令(0);
 						}
 						break;
 				}
@@ -106,6 +108,17 @@ function 按下() {
 					}
 					break;
 				case '互锁':
+					激活.value = true;
+					switch (跳转类型) {
+						case '不跳转':
+							按钮指令(1);
+							break;
+						case '主页面':
+						case '附页':
+							按钮指令(-1);
+							break;
+					}
+					break;
 				default:
 					激活.value = true;
 					按钮指令(-1);

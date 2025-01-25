@@ -20,6 +20,10 @@
 			<cus-curtain v-if="item.property == 25" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 
 			<cus-scroll-img v-if="item.property == 26" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+
+			<tc-matrix v-if="item.property == 19" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
+
+			<tc-slider v-if="item.property == 16" class="component" :组件数据="item" :页面名="面板数据.pagename" :style="通用组件样式(item)" />
 		</div>
 	</div>
 </template>
@@ -36,6 +40,8 @@ import cusButtonMatrix1 from './按钮矩阵-样式一.vue';
 import cusButtonMatrix2 from './按钮矩阵-样式二.vue';
 import cusCurtain from './窗帘.vue';
 import cusScrollImg from './轮播图.vue';
+import tcMatrix from './同创矩阵.vue';
+import tcSlider from './同创滑块.vue';
 
 onMounted(() => {
 	初始化互锁组件状态();
@@ -86,7 +92,7 @@ function 通用组件样式(item: any): object {
 		height: `${item.Height * 缩放比.value.高度比}px`,
 		left: `${item.X1 * 缩放比.value.宽度比}px`,
 		top: `${item.Y1 * 缩放比.value.高度比}px`,
-		zIndex: item.zValue,
+		zIndex: item.zValue || 100,
 	};
 }
 function 初始化互锁组件状态() {

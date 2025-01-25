@@ -9,7 +9,7 @@
 		<el-input v-if="data.ValueShow && data.ScrollDirect != '横'" v-model="输入值" @change="校验输入($event)" style="width: 80%; margin-top: 6px" v-input-size />
 
 		<div :class="[data.ScrollDirect == '横' ? 'row_layout' : '', 'flex_grow']">
-			<el-slider v-model="target.值" :min="最小值" :max="最大值" :step="步长" :marks="生成刻度值()" v-bind="动态属性" @input="控制下发频率()" v-cus-style />
+			<el-slider v-model="target.值" :min="最小值" :max="最大值" :step="步长" :marks="生成刻度值()" v-bind="动态属性" @input="控制下发频率()" @change="下发指令()" v-cus-style />
 		</div>
 
 		<el-input v-if="data.ValueShow && data.ScrollDirect == '横'" v-model="输入值" @change="校验输入($event)" style="width: 10%" />
@@ -47,12 +47,14 @@ watch(
 		if (now.类型 === '初始化') {
 			let result = now.data['slider'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				target.值 = parseFloat(result.value);
+				let t = parseFloat(result.value);
+				!isNaN(t) && (target.值 = t);
 			}
 		} else if (now.类型 === '更新') {
 			let result = now.data['values'].find((e: any) => e.pagename === 页面名 && e.rectname === data.name);
 			if (result) {
-				target.值 = parseFloat(result.value);
+				let t = parseFloat(result.value);
+				!isNaN(t) && (target.值 = t);
 			}
 		}
 	}
@@ -193,6 +195,8 @@ function 校验输入(num: string) {
 		let t = String(步长.value).split('.');
 		let 小数位 = t.length == 1 ? 0 : Number(t[1]);
 		target.值 = Math.round(Number(num) * Math.pow(10, 小数位)) / Math.pow(10, 小数位);
+	} else {
+		输入值.value = target.值;
 	}
 	下发指令();
 }
