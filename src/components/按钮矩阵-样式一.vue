@@ -87,12 +87,34 @@ watch(
 				// 更新当前状态
 				let str = `in${列}-out${行}`;
 				if (激活) {
+					// 视频矩阵有互斥性 判断同一行是否有重复激活的 取消之前的激活状态
+					if (data.matrixType == '视频矩阵') {
+						for (let btn of 矩阵.value) {
+							// 注意 当前按钮已被激活
+							if (btn.id && btn.行 == 行 && btn.列 != 列 && btn.激活) {
+								// 是按钮 且 同一out 且 不是当前按钮 且 之前是激活状态 则取消激活
+								btn.激活 = false;
+							}
+						}
+						let arr2: string[] = [];
+						for (let val of 当前状态.激活序列) {
+							let arr = val.split('-');
+							let out = arr[1].match(reg)[0];
+							if (行 == out) {
+								arr2.push(val);
+							}
+						}
+						for (let val of arr2) {
+							let i = 当前状态.激活序列.indexOf(val);
+							当前状态.激活序列.splice(i, 1);
+						}
+					}
 					// 新按钮被激活 则添加到激活列表
 					当前状态.激活序列.indexOf(str) == -1 && 当前状态.激活序列.push(str);
 				} else {
 					// 旧按钮被取消激活
 					let index = 当前状态.激活序列.indexOf(str);
-					当前状态.激活序列.splice(index, 1);
+					index != -1 && 当前状态.激活序列.splice(index, 1);
 				}
 			}
 		}
@@ -181,28 +203,29 @@ function 点击(按钮: any) {
 				if (btn.id && btn.行 == 按钮.行 && btn.激活) {
 					// 是按钮 且 同一out 且 之前是激活状态 则取消激活
 					btn.激活 = false;
-					break;
 				}
 			}
 			// 更新激活状态
 			// 找到要删除的字符串位置 添加off标识 并给新激活的按钮字符串添加on
-			let index = 0;
+			let arr2: string[] = [];
 			for (let val of 当前状态.激活序列) {
 				let arr = val.split('-');
 				let 行 = arr[1].match(reg)[0];
-				// 同一out的只会有一个将其置为off 存到代发指令
 				if (按钮.行 == 行) {
 					// 同一行 且 激活状态
 					下发序列.push(`${val}-off`);
-					break;
+					arr2.push(val);
 				}
-				index++;
 			}
 			// 当前按钮激活 存到代发指令
 			下发序列.push(`${str}-on`);
-			// 以新激活按钮字符串替换原位置字符串
-			// 有可能没找到 则index等于激活序列长度
-			当前状态.激活序列.length != index && 当前状态.激活序列.splice(index, 1, str);
+			// 删除取消激活按钮的字符串
+			for (let val of arr2) {
+				let i = 当前状态.激活序列.indexOf(val);
+				当前状态.激活序列.splice(i, 1);
+			}
+			// 再填入新激活按钮的字符串
+			当前状态.激活序列.push(str);
 			按钮.激活 = true;
 			下发指令(下发序列);
 		}
@@ -227,6 +250,16 @@ function 能否点击(按钮: any) {
 	return arr;
 }
 function 初始化() {
+	if (data.ButtonMode == '图片') {
+		let reg = /\s/g; // 匹配空格 每个空格替换为%20
+		if (data.ActivePictureName !== 'NONE') {
+			// backgroundImage 的url中如果有空格 不会像 img标签一样添加转义字符 会导致名称不符
+			data.ActivePictureName = data.ActivePictureName.replace(reg, '%20');
+		}
+		if (data.PictureNme !== 'NONE') {
+			data.PictureNme = data.PictureNme.replace(reg, '%20');
+		}
+	}
 	let total = Math.min(INNum.value, OUTNum.value);
 	if (data.IsLabelShow) {
 		// 显示标签 加一行一列

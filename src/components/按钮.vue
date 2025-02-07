@@ -324,6 +324,16 @@ function 文字内容() {
 	}
 }
 function 初始化() {
+	if (data.ButtonMode == '图片') {
+		let reg = /\s/g; // 匹配空格 每个空格替换为%20
+		if (data.ActivePictureName !== 'NONE') {
+			// backgroundImage 的url中如果有空格 不会像 img标签一样添加转义字符 会导致名称不符
+			data.ActivePictureName = data.ActivePictureName.replace(reg, '%20');
+		}
+		if (data.PictureNme !== 'NONE') {
+			data.PictureNme = data.PictureNme.replace(reg, '%20');
+		}
+	}
 	if (data.Data.length) {
 		let t = data.Data.split(';');
 		switch (t[0]) {

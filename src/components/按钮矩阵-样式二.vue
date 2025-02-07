@@ -80,12 +80,27 @@ watch(
 				// 更新当前状态
 				let str = `in${in_num}-out${out_num}`;
 				if (激活) {
-					// 新按钮被激活 直接push
-					当前状态.激活序列.push(str);
+					if (data.matrixType == '视频矩阵') {
+						let arr2: string[] = [];
+						for (let val of 当前状态.激活序列) {
+							let arr = val.match(reg);
+							let in_num2 = Number(arr[0]);
+							let out_num2 = Number(arr[1]);
+							if (in_num != in_num2 && out_num == out_num2) {
+								// 不是当前in 且 out相同 添加到待移除
+								arr2.push(val);
+							}
+						}
+						for (let val of arr2) {
+							let i = 当前状态.激活序列.indexOf(val);
+							当前状态.激活序列.splice(i, 1);
+						}
+					}
+					当前状态.激活序列.indexOf(str) == -1 && 当前状态.激活序列.push(str);
 				} else {
 					// 旧按钮被取消激活
 					let index = 当前状态.激活序列.indexOf(str);
-					当前状态.激活序列.splice(index, 1);
+					index != -1 && 当前状态.激活序列.splice(index, 1);
 					if (当前状态.激活序列.length == 0) {
 						当前状态.列 = 0;
 					}
@@ -180,6 +195,16 @@ function 按钮背景(类型: string, 按钮: any) {
 	return style;
 }
 function 初始化() {
+	if (data.ButtonMode == '图片') {
+		let reg = /\s/g; // 匹配空格 每个空格替换为%20
+		if (data.ActivePictureName !== 'NONE') {
+			// backgroundImage 的url中如果有空格 不会像 img标签一样添加转义字符 会导致名称不符
+			data.ActivePictureName = data.ActivePictureName.replace(reg, '%20');
+		}
+		if (data.PictureNme !== 'NONE') {
+			data.PictureNme = data.PictureNme.replace(reg, '%20');
+		}
+	}
 	for (let i = 0; i < INNum.value; i++) {
 		IN.value.push({
 			label: data.ButtonInfo[i].name,
@@ -230,22 +255,23 @@ function 点击(类型: string, 按钮: any) {
 				return;
 			} else {
 				let 下发序列: string[] = [];
-				// 找之前有没有同一out 将其移除 并添加到代发指令
-				let index = 0;
+				let arr2: string[] = [];
 				for (let val of 当前状态.激活序列) {
 					let arr = val.split('-');
 					let out_num = arr[1].match(reg)[0];
 					if (按钮.列 == out_num) {
-						// 同一行 且 激活状态
+						// 同一out 且激活状态
 						下发序列.push(`${val}-off`);
-						break;
+						arr2.push(val);
 					}
-					index++;
 				}
 				// 当前按钮激活 存到代发指令
 				下发序列.push(`${str}-on`);
-				// 以新激活按钮字符串替换原位置字符串
-				当前状态.激活序列.length != index && 当前状态.激活序列.splice(index, 1, str);
+				for (let val of arr2) {
+					let i = 当前状态.激活序列.indexOf(val);
+					当前状态.激活序列.splice(i, 1);
+				}
+				当前状态.激活序列.push(str);
 				按钮.激活 = true;
 				下发指令(下发序列);
 			}
